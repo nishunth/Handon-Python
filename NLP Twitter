@@ -1,0 +1,234 @@
+In any machine learning task, cleaning or preprocessing the data is as important as model building if not more. And when it comes to unstructured data like text, this process is even more important.
+
+Objective of this kernel is to understand the various text preprocessing steps with code examples.
+
+Some of the common text preprocessing / cleaning steps are:
+
+Lower casing
+Removal of Punctuations
+Removal of Stopwords
+Removal of Frequent words
+Removal of Rare words
+Stemming
+Lemmatization
+Removal of emojis
+Removal of emoticons
+Conversion of emoticons to words
+Conversion of emojis to words
+Removal of URLs
+Removal of HTML tags
+Chat words conversion
+
+
+import numpy as np
+import pandas as pd
+import re
+import nltk
+import spacy
+import string
+pd.options.mode.chained_assignment = None
+
+full_df = pd.read_csv("C:/Users/Sangamithra/Desktop/Data Sets/twitter.csv", nrows=5000)
+df = full_df[["text"]]
+df["text"] = df["text"].astype(str)
+full_df.head()
+
+
+
+##Lower Casing
+df["text_lower"] = df["text"].str.lower()
+df.head()
+
+##Removal of Punctuations = Eg !"#$%&\'()*+,-./:;<=>?@[\\]^_{|}~`
+
+# drop the new column created in last cell
+df.drop(["text_lower"], axis=1, inplace=True)
+
+PUNCT_TO_REMOVE = string.punctuation
+def remove_punctuation(text):
+    """custom function to remove the punctuation"""
+    return text.translate(str.maketrans('', '', PUNCT_TO_REMOVE))
+
+df["text_wo_punct"] = df["text"].apply(lambda text: remove_punctuation(text))
+df.head()
+
+
+
+##Removal of stopwords Eg the a i, me, my, myself, we, our, ours, ourselves, you, you're, you've, you'll, you'd, your, yours, yourself, yourselves, he, him, his
+
+from nltk.corpus import stopwords
+", ".join(stopwords.words('english'))
+
+import nltk
+nltk.download('stopwords')
+
+STOPWORDS = set(stopwords.words('english'))
+def remove_stopwords(text):
+    """custom function to remove the stopwords"""
+    return " ".join([word for word in str(text).split() if word not in STOPWORDS])
+
+df["text_wo_stop"] = df["text_wo_punct"].apply(lambda text: remove_stopwords(text))
+df.head()
+
+#Removal of Frequent words
+
+from collections import Counter
+cnt = Counter()
+for text in df["text_wo_stop"].values:
+    for word in text.split():
+        cnt[word] += 1
+        
+cnt.most_common(10)
+
+FREQWORDS = set([w for (w, wc) in cnt.most_common(10)])
+def remove_freqwords(text):
+    """custom function to remove the frequent words"""
+    return " ".join([word for word in str(text).split() if word not in FREQWORDS])
+
+df["text_wo_stopfreq"] = df["text_wo_stop"].apply(lambda text: remove_freqwords(text))
+df.head()
+
+##Removal of Rare words
+
+# Drop the two columns which are no more needed 
+df.drop(["text_wo_punct", "text_wo_stop"], axis=1, inplace=True)
+
+n_rare_words = 10
+RAREWORDS = set([w for (w, wc) in cnt.most_common()[:-n_rare_words-1:-1]])
+def remove_rarewords(text):
+    """custom function to remove the rare words"""
+    return " ".join([word for word in str(text).split() if word not in RAREWORDS])
+
+df["text_wo_stopfreqrare"] = df["text_wo_stopfreq"].apply(lambda text: remove_rarewords(text))
+df.head()
+
+#Stemming walking = walk , talking = talk
+
+from nltk.stem.porter import PorterStemmer
+
+# Drop the two columns 
+df.drop(["text_wo_stopfreq", "text
+
+_wo_stopfreqrare"], axis=1, inplace=True) 
+
+stemmer = PorterStemmer()
+def stem_words(text):
+    return " ".join([stemmer.stem(word) for word in text.split()])
+
+df["text_stemmed"] = df["text"].apply(lambda text: stem_words(text))
+df.head()
+
+# for other Language
+from nltk.stem.snowball import SnowballStemmer
+SnowballStemmer.languages
+
+##Lemmatization car car car's cars =car Lemmatization usually refers to doing things properly with the use of a vocabulary and morphological analysis of words, 
+##normally aiming to remove inflectional endings only and to return the base or dictionary form of a word, which is known as the lemma .
+
+import nltk
+nltk.download('wordnet')
+
+from nltk.stem import WordNetLemmatizer
+
+lemmatizer = WordNetLemmatizer()
+def lemmatize_words(text):
+    return " ".join([lemmatizer.lemmatize(word) for word in text.split()])
+
+df["text_lemmatized"] = df["text"].apply(lambda text: lemmatize_words(text))
+df.head()
+
+lemmatizer.lemmatize("running")
+
+print("Word is : stripes")
+print("Lemma result for verb : ",lemmatizer.lemmatize("stripes", 'v'))
+print("Lemma result for noun : ",lemmatizer.lemmatize("stripes", 'n'))
+
+import nltk
+nltk.download('averaged_perceptron_tagger')
+
+from nltk.corpus import wordnet
+from nltk.stem import WordNetLemmatizer
+
+lemmatizer = WordNetLemmatizer()
+wordnet_map = {"N":wordnet.NOUN, "V":wordnet.VERB, "J":wordnet.ADJ, "R":wordnet.ADV}
+def lemmatize_words(text):
+    pos_tagged_text = nltk.pos_tag(text.split())
+    return " ".join([lemmatizer.lemmatize(word, wordnet_map.get(pos[0], wordnet.NOUN)) for word, pos in pos_tagged_text])
+
+df["text_lemmatized"] = df["text"].apply(lambda text: lemmatize_words(text))
+df.head()
+
+
+
+##Removal of Emojis
+
+# Reference : https://gist.github.com/slowkow/7a7f61f495e3dbb7e3d767f97bd7304b
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                           u"\U0001F600-\U0001F64F"  # emoticons
+                           u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                           u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                           u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                           u"\U00002702-\U000027B0"
+                           u"\U000024C2-\U0001F251"
+                           "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
+
+remove_emoji("game is on 🔥🔥")
+
+def remove_emoticons(text):
+    emoticon_pattern = re.compile(u'(' + u'|'.join(k for k in EMOTICONS) + u')')
+    return emoticon_pattern.sub(r'', text)
+
+remove_emoticons("Hello :-)")
+
+
+###Removal of URLs
+
+def remove_urls(text):
+    url_pattern = re.compile(r'https?://\S+')
+    return url_pattern.sub(r'', text)
+
+text = "Driverless AI NLP blog post on https://www.h2o.ai/blog/detecting-sarcasm-is-difficult-but-ai-may-have-an-answer/"
+remove_urls(text)
+
+
+##Removal of HTML Tags
+
+def remove_html(text):
+    html_pattern = re.compile('<.*?>')
+    return html_pattern.sub(r'', text)
+
+text = """<div>
+<h1> H2O</h1>
+<p> AutoML</p>
+<a href="https://www.h2o.ai/products/h2o-driverless-ai/"> Driverless AI</a>
+</div>"""
+
+print(remove_html(text))
+
+##Chat Words Conversion
+
+chat_words_map_dict = {}
+chat_words_list = []
+for line in chat_words_str.split("\n"):
+    if line != "":
+        cw = line.split("=")[0]
+        cw_expanded = line.split("=")[1]
+        chat_words_list.append(cw)
+        chat_words_map_dict[cw] = cw_expanded
+chat_words_list = set(chat_words_list)
+
+def chat_words_conversion(text):
+    new_text = []
+    for w in text.split():
+        if w.upper() in chat_words_list:
+            new_text.append(chat_words_map_dict[w.upper()])
+        else:
+            new_text.append(w)
+    return " ".join(new_text)
+
+chat_words_conversion("one minute BRB")
+
+
+
