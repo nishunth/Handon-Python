@@ -1,0 +1,14 @@
+import pandas as pd
+data = pd.read_csv("C:/Users/Sangamithra/Desktop/Data Sets/bigmart.csv")
+
+data.head()
+
+#converting Dummy variable
+df_Item_Fat_Content = pd.get_dummies(data['Item_Fat_Content'])
+df_Outlet_Size = pd.get_dummies(data['Outlet_Size'])
+
+
+#Concatinating dummies
+df_new = pd.concat([data, df_Item_Fat_Content,df_Outlet_Size], axis=1)
+
+df_new.head()
