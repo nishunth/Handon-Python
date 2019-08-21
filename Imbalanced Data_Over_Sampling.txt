@@ -38,10 +38,10 @@ from collections import Counter
 print(sorted(Counter(y_resampled).items()))
 
 #Issue Above :
-#One issue with random naive over-sampling is that it just duplicates already existing data. Therefore, while classification algorithms are exposed to a greater amount of observations from the minority class, they won’t learn more about how to tell fraudulent and non-fraudulent observations apart. The new data does not contain more information about the characteristics of fraudulent transactions than the old data.
+#One issue with random naive over-sampling is that it just duplicates already existing data. Therefore, while classification algorithms are exposed to a greater amount of observations from the minority class, they wonâ€™t learn more about how to tell fraudulent and non-fraudulent observations apart. The new data does not contain more information about the characteristics of fraudulent transactions than the old data.
 
 ##Synthetic Minority Over-Sampling Technique (SMOTE)
-##A more advanced alternative to using random naive over-sampling is Synthetic Minority Over-Sampling Technique(SMOTE). While SMOTE still oversamples the minority class, it does not rely on reusing previously existing observations. Instead, SMOTE creates new (synthetic) observations based on the observations in your data. How does SMOTE do that? To illustrate my point, I’ve put together a fictional data set:
+##A more advanced alternative to using random naive over-sampling is Synthetic Minority Over-Sampling Technique(SMOTE). While SMOTE still oversamples the minority class, it does not rely on reusing previously existing observations. Instead, SMOTE creates new (synthetic) observations based on the observations in your data. How does SMOTE do that? To illustrate my point, Iâ€™ve put together a fictional data set:
 
 # importing SMOTE
 from imblearn.over_sampling import SMOTE
@@ -51,7 +51,7 @@ X_resampled, y_resampled = SMOTE().fit_resample(X, y)
 print(sorted(Counter(y_resampled).items()))
 
 #Adaptive Synthetic (ADASYN)
-#ADASYN’s main advantage lies in its adaptive nature: by basing the number of synthetic observations on the ratio of majority to minority observations, ADASYN places a higher emphasis on more challenging regions of the data.
+#ADASYNâ€™s main advantage lies in its adaptive nature: by basing the number of synthetic observations on the ratio of majority to minority observations, ADASYN places a higher emphasis on more challenging regions of the data.
 
 # importing ADASYN
 from imblearn.over_sampling import ADASYN
@@ -67,3 +67,5 @@ from imblearn.over_sampling import BorderlineSMOTE
 
 X_resampled, y_resampled = BorderlineSMOTE().fit_resample(X, y)
 print(sorted(Counter(y_resampled).items()))
+
+https://towardsdatascience.com/a-deep-dive-into-imbalanced-data-over-sampling-f1167ed74b5
